@@ -1,0 +1,404 @@
+# Dokumentation von "Realkredite"
+
+> Version 0.1 / 08.10.2020
+
+#### Changelog
+
+## Aufgabe der Anwendung / Lastenheft
+
+## Datenstruktur
+
+
+
+### Importe
+### Datenbank
+
+## Funktionen der Anwendung
+
+### Benutzersteuerung
+
+## Basis-Importe
+
+## Regelimporte aus agree21IDA
+
+## Datenqualität
+
+### Fehlerhafte Einträge in der Basistabelle "Zusammensetzung Index"
+
+#### Doppelte Einträge in der Basistabelle: "Final_Basistabelle_Realkreditverschlüsselung_Bearbeitungsvermerke_XX.csv"
+```
+4181400001J
+4181400009J
+33728700002J
+46876200010S
+60787300001J
+236184600001J
+238555700006J
+258158200001J
+276044100004J
+604887300002J
+```			
+## Technikeinsatz und Code
+### Server 
+### Framworks
+### Code
+
+## Datensicherung
+
+
+
+
+
+
+
+Importmeldung:  "Der Import wurde erfolgreich abgeschlossen, 883 Abfragen wurden ausgeführt. (Final_Basistabelle_Realkreditverschlüsselung_Bearbeitungsvermerke_XX.csv)"
+
+	Ablauf
+		Import der CSV Daten in die Import-Tabelle
+			Basisdaten
+			
+				CREATE TABLE `realkredite` (
+				  `idx` varchar(20) NOT NULL,
+				  `kundennummer` int(10) NOT NULL,
+				  `kundenname` varchar(100) NOT NULL,
+				  `sachbearbeiter_beraternummer` varchar(5) NOT NULL,
+				  `sachbearbeiter_genoid` varchar(7) DEFAULT NULL,
+				  `wohngebaeudeversicherung` enum('liegt vor','Verzicht möglich','fehlt') DEFAULT NULL,
+				  `bankvertraege` enum('liegen vor','fehlen') DEFAULT NULL,
+				  `allgemeine_unterlagen` enum('fehlen','liegen vor') DEFAULT NULL,
+				  `besichtigung` enum('nicht erfolgt','terminiert','Verzicht','erfolgt') DEFAULT NULL,
+				  `fertigstellung` int(11) DEFAULT NULL,
+				  `gesamtstatus` enum('dauerhaft nicht möglich - siehe Bemerkung','erledigt RK-Verschlüsselung erfolgt','in Bearbeitung') DEFAULT NULL,
+				  `bemerkung` text DEFAULT NULL,
+				  `berater` varchar(200) DEFAULT NULL,
+				  `wiedervorlage_sachbearbeiter` enum('ja','nein') DEFAULT NULL,
+				  `berater_angeschrieben` enum('ja','nein') DEFAULT NULL,
+				  `erstellt` datetime NOT NULL DEFAULT current_timestamp(),
+				  `geaendert` datetime NOT NULL DEFAULT current_timestamp()
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+				--
+				-- Indizes der exportierten Tabellen
+				--
+
+				--
+				-- Indizes für die Tabelle `realkredite`
+				--
+				ALTER TABLE `realkredite`
+				  ADD PRIMARY KEY (`idx`);
+				COMMIT;		
+			
+			
+			IDA-Daten (Dauerauftrag)
+			
+				CREATE TABLE `import_ida` (
+				  `IDX` varchar(25) NOT NULL,
+				  `GENO_ID_relevant` varchar(7) DEFAULT NULL,
+				  `SB_relevant` int(5) DEFAULT NULL,
+				  `Si_Nummer` int(3) DEFAULT NULL,
+				  `Si_Status` varchar(1) DEFAULT NULL,
+				  `Si_Bearbeiter` int(5) DEFAULT NULL,
+				  `Si_Berabeiter_NN` varchar(25) DEFAULT NULL,
+				  `Si_Berarbeiter_VN` varchar(25) DEFAULT NULL,
+				  `Si_Kundenberater` int(5) DEFAULT NULL,
+				  `Si_Kundenberater_NN` varchar(25) DEFAULT NULL,
+				  `Si_Kundenberater_VN` varchar(25) DEFAULT NULL,
+				  `Si_Geber` int(10) DEFAULT NULL,
+				  `Si_Geber_Name` varchar(50) DEFAULT NULL,
+				  `Si_Nehmer` int(10) DEFAULT NULL,
+				  `Si_Nehmer_Name` varchar(50) DEFAULT NULL,
+				  `Si_Kategorie` int(5) DEFAULT NULL,
+				  `Si_Kategorie_Text` varchar(100) DEFAULT NULL,
+				  `Si_Objektart` int(4) DEFAULT NULL,
+				  `Si_Objektart_Text` varchar(250) DEFAULT NULL,
+				  `Si_Sicherheitenart` int(3) DEFAULT NULL,
+				  `Si_Sicherheitenart_Text` varchar(100) DEFAULT NULL,
+				  `Si_Zweckerklaerung` varchar(1) DEFAULT NULL,
+				  `Si_Zweckerklaerung_RK` varchar(1) DEFAULT NULL,
+				  `Si_RW_Datum` date DEFAULT NULL,
+				  `Si_QA` varchar(1) DEFAULT NULL,
+				  `Si_MW_Status` int(1) DEFAULT NULL,
+				  `Si_BW_Status` int(1) DEFAULT NULL,
+				  `Si_Wert` decimal(10,2) DEFAULT NULL,
+				  `Si_Wert_verteilt` decimal(10,2) DEFAULT NULL,
+				  `Si_Wert_frei` decimal(10,2) DEFAULT NULL,
+				  `Si_AE_Datum` datetime DEFAULT NULL
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8;			
+		
+				ALTER TABLE `import_ida`
+				  ADD PRIMARY KEY (`IDX`);		
+		
+		
+			Tabelle-"importe" = importe_basis + importe_ida auf Basis der IDA Tabelle
+			
+				CREATE TABLE `importe` (
+				  `IDX` varchar(25) NOT NULL,
+				  `GENO_ID_relevant` varchar(7) DEFAULT NULL,
+				  `SB_relevant` int(5) DEFAULT NULL,
+				  `Si_Nummer` int(3) DEFAULT NULL,
+				  `Si_Status` varchar(1) DEFAULT NULL,
+				  `Si_Bearbeiter` int(5) DEFAULT NULL,
+				  `Si_Berabeiter_NN` varchar(25) DEFAULT NULL,
+				  `Si_Berarbeiter_VN` varchar(25) DEFAULT NULL,
+				  `Si_Kundenberater` int(5) DEFAULT NULL,
+				  `Si_Kundenberater_NN` varchar(25) DEFAULT NULL,
+				  `Si_Kundenberater_VN` varchar(25) DEFAULT NULL,
+				  `Si_Geber` int(10) DEFAULT NULL,
+				  `Si_Geber_Name` varchar(50) DEFAULT NULL,
+				  `Si_Nehmer` int(10) DEFAULT NULL,
+				  `Si_Nehmer_Name` varchar(50) DEFAULT NULL,
+				  `Si_Kategorie` int(5) DEFAULT NULL,
+				  `Si_Kategorie_Text` varchar(100) DEFAULT NULL,
+				  `Si_Objektart` int(4) DEFAULT NULL,
+				  `Si_Objektart_Text` varchar(250) DEFAULT NULL,
+				  `Si_Sicherheitenart` int(3) DEFAULT NULL,
+				  `Si_Sicherheitenart_Text` varchar(100) DEFAULT NULL,
+				  `Si_Zweckerklaerung` varchar(1) DEFAULT NULL,
+				  `Si_Zweckerklaerung_RK` varchar(1) DEFAULT NULL,
+				  `Si_RW_Datum` date DEFAULT NULL,
+				  `Si_QA` varchar(1) DEFAULT NULL,
+				  `Si_MW_Status` int(1) DEFAULT NULL,
+				  `Si_BW_Status` int(1) DEFAULT NULL,
+				  `Si_Wert` decimal(10,2) DEFAULT NULL,
+				  `Si_Wert_verteilt` decimal(10,2) DEFAULT NULL,
+				  `Si_Wert_frei` decimal(10,2) DEFAULT NULL,
+				  `Si_AE_Datum` datetime DEFAULT NULL
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8;			
+		
+				ALTER TABLE `import`
+				  ADD PRIMARY KEY (`IDX`);		
+		
+		
+		Import der Daten aus der Import-Tabelle in die Produktivtabelle
+		
+			CREATE TABLE `mitarbeiter` (
+			  `genoid` varchar(7) DEFAULT NULL,
+			  `vorname_name` varchar(50) DEFAULT NULL,
+			  `email` varchar(50) DEFAULT NULL,
+			  `telefon` varchar(30) DEFAULT NULL,
+			  `kennwort` varchar(200) NOT NULL,
+			  `level` int(11) NOT NULL,
+			  `beraternummer` varchar(20) NOT NULL,
+			  `berichtet` int(11) DEFAULT NULL
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+			--
+			-- Indizes der exportierten Tabellen
+			--
+
+			--
+			-- Indizes für die Tabelle `mitarbeiter`
+			--
+			ALTER TABLE `mitarbeiter`
+			  ADD PRIMARY KEY (`beraternummer`);
+			COMMIT;	
+		
+		
+			Anmerkung: JEDER Mitarbeiter bekommt eine Beraternummer, da sie als PRIMARY gilt. Das gilt auch für mich und Martin Wilms.
+			Es werden Beraternummern eines anderen Zahlenbereiches genommen. 00001-00100
+		
+		
+			normalisieren der Mitarbeiter-IDs aus den IDA-Daten (Schlüssel über die 5stellige Beraternummer)
+
+				-- Wenn SB_relevant = Si_Bearbeiter
+				
+					INSERT IGNORE INTO mitarbeiter (`genoid`,`vorname_name`,`beraternummer`)
+					SELECT `GENO_ID_relevant`,CONCAT(`Si_Berarbeiter_VN`," ",`Si_Berabeiter_NN`),`Si_Bearbeiter`
+					FROM import_ida
+					WHERE `GENO_ID_relevant` <> "" AND `SB_relevant` = `Si_Bearbeiter`
+					GROUP BY `GENO_ID_relevant`;
+	
+				-- Wenn SB_relevant = Si_Kundenberater
+				
+					INSERT IGNORE INTO mitarbeiter (`genoid`,`vorname_name`,`beraternummer`)
+					SELECT `GENO_ID_relevant`,CONCAT(`Si_Kundenberater_VN`," ",`Si_Kundenberater_NN`),`Si_Kundenberater`
+					FROM import_ida
+					WHERE `GENO_ID_relevant` <> "" AND `SB_relevant` = `Si_Kundenberater`
+					GROUP BY `GENO_ID_relevant`;			
+
+				-- Import aller Berater aus der Basistabelle, welche nicht in der IDA-Abfrage vorkommen und somit keine GenoID haben (->Beraternummer)
+				
+					INSERT IGNORE INTO mitarbeiter (`vorname_name`,`beraternummer`)
+					SELECT `sachbearbeiter`,`beraternummer`
+					FROM import_basis
+					GROUP BY `beraternummer`;	
+
+
+				KEINE vorbelegung des Passwort-Feldes (nachträglich Eintragung durch den Vorgesetzten bzw. Admin)
+
+			
+	Anlage eines neuen "realkredite" Datensatzes mit Verknüpfung zum 
+	
+	
+	BASIS-IMPORT (einmalig) in import_ida (*zurückstellen*)
+	
+		... ODER Link zur Basistabelle wg. si_nummer und si_kategorie
+	
+	
+	BASIS-IMPORT (einmalig) in realkredite
+	
+	TEST auf ENUM-Felder
+	
+		SELECT besichtigung FROM import_basis GROUP BY besichtigung
+		Ergebnis:
+			<leer>
+			erfolgt
+			nicht erfolgt
+			terminiert
+			Verzicht
+		Lösung Erweiterung ENUM
+		
+		SELECT wiedervorlage_sachbearbeiter FROM import_basis GROUP BY wiedervorlage_sachbearbeiter
+		Ergebnis:
+			<leer>
+			JA
+		Lösung lower();
+
+		SELECT berater_angeschrieben FROM import_basis GROUP BY berater_angeschrieben
+	
+		Ergebnis:
+			<leer>
+			JA
+		Lösung lower();
+
+		SELECT gesamtstatus FROM import_basis GROUP BY gesamtstatus
+		Ergebnis:
+			dauerhaft nicht möglich - siehe Bemerkung
+			erledigt RK-Verschlüsselung erfolgt
+			in Bearbeitung
+		Lösung Erweiterung ENUM
+
+		SELECT allgemeine_unterlagen FROM import_basis GROUP BY allgemeine_unterlagen
+		Ergebnis:
+			fehlen
+			liegen vor
+		Lösung Erweiterung ENUM
+
+	
+	IMPORT von Import_basis in realkredite
+	
+		INSERT IGNORE INTO realkredite (
+			idx,
+			kundennummer,
+			kundenname,
+			sachbearbeiter_beraternummer,
+			sachbearbeiter_genoid,
+			wohngebaeudeversicherung,
+			bankvertraege,
+			allgemeine_unterlagen,
+			besichtigung,
+			fertigstellung,
+			gesamtstatus,
+			bemerkung,
+			berater,
+			wiedervorlage_sachbearbeiter,
+			berater_angeschrieben
+			)
+		SELECT 
+			b.idx,
+			b.kundennummer,
+			b.kundenname,
+			m.beraternummer,
+			m.genoid,
+			TRIM(b.wohngebaeudeversicherung),
+			TRIM(b.bankvertraege),
+			TRIM(b.allgemeine_unterlagen),
+			TRIM(b.besichtigung),
+			f.id,
+			TRIM(b.gesamtstatus),
+			TRIM(b.bemerkung),
+			TRIM(b.berater),
+			LOWER(b.wiedervorlage_sachbearbeiter),
+			LOWER(b.berater_angeschrieben)
+		FROM import_basis as b
+		LEFT JOIN mitarbeiter as m ON b.beraternummer = m.beraternummer
+		LEFT JOIN fertigstellung as f ON b.fertigstellung = f.name
+		GROUP BY b.idx
+	
+	
+	Initial-Import in Tabelle "importe" aus import_basis
+	
+		INSERT INTO importe (
+			IDX,
+			Si_Bearbeiter,
+			Si_Geber,
+			Si_Geber_Name,
+			Si_Nummer,
+			Si_kategorie
+		) 
+		SELECT idx, beraternummer, kundennummer, kundenname, si_nummer,si_kategorie
+		FROM import_basis;
+	
+	
+	IDA-IMPORT (monatlich)
+	
+		Import des monatlichen IDA-EXPORTS in die Tabelle "importe"
+		
+		Massgeblich ist der Schlüssel "IDX"
+			1. Neue Einträge kommen hinzu
+			2. Bestehende Einträge werden aktualisiert
+
+			LÖSUNG: MySQL REPLACE (Kombination aus INSERT und UPDATE) ODER (INSERT mit ON DUPLICATE KEY UPDATE)
+						
+			REPLACE INTO importe
+			SELECT * 
+			FROM import_ida
+		
+		Import des monatlichen NEUEN Datensätze des IDA-EXPORTS innnerhalb der Tabelle importe in die Tabelle "realkredite"
+		
+			INSERT IGNORE INTO realkredite (idx,kundennummer,kundenname,sachbearbeiter_beraternummer)
+			SELECT 
+				i.IDX,
+				i.Si_Geber,
+				i.Si_Geber_Name,
+				(CASE WHEN (Si_Bearbeiter = 0) THEN Si_Kundenberater ELSE Si_Bearbeiter END) as beraternummer
+			FROM importe i
+			NATURAL LEFT JOIN realkredite r
+			WHERE r.idx IS NULL
+			
+			Kontrolle (https://stackoverflow.com/questions/11767565/mysql-select-rows-from-a-table-that-are-not-in-another/11767663)
+				SELECT 
+					i.IDX,
+					i.Si_Geber,
+					i.Si_Geber_Name,
+					(CASE WHEN (Si_Bearbeiter = 0) THEN Si_Kundenberater ELSE Si_Bearbeiter END) as beraternummer
+				FROM importe i
+				NATURAL LEFT JOIN realkredite r
+				WHERE r.idx IS NULL
+
+		UTF-16 Import in MySQL
+			LÖSUNG: vorherige Konvertierung im PHP-Import (https://dave-baker.com/2017/10/03/converting-a-utf-16-csv-to-utf-8-in-php/)
+			WORKAROUND: Konvertierung in Notepad++ (Kodierung -> UTF-8)
+			
+		Import über! die Produktionstabelle
+			LÖSUNG: Import-Tabelle nutzen -> normalisieren und überschreiben der Produktivtabelle
+			
+		Fehlende Zusatzfelder in der Produktivtabelle
+			gesamtstatus
+			berater id
+			wiedervorlage Sachbearbeiter
+			Berater Angeschrieben
+			bearbeitet Durch id
+		 
+		Relation zur Mitarbeitertabelle 
+			normalisieren beim Import in die Produktivtabelle
+			
+			
+		überschreiben der CSV-Import-Felder
+		persistenz der "Zusatzfelder"		
+		
+		
+Bereinigungen
+	Doppelte Mitarbeiter-IDs (genoid)	
+
+	YG3X3A2 2
+	YG3X3B3 2
+	YG3X3BS 2
+	YG3X3HU 2
+	YG3X3M7 2
+	YG3X3MF 2
+	YG3X3S6 2
+	YG3X3TE 2 (55503 unbekannt)
+	YG3X3W8 2	
+
+	Setzen der genoid als UNIQUE
